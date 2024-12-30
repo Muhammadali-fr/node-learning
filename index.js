@@ -1,5 +1,7 @@
 let express = require("express");
 const app = express();
+app.use(express.json());
+
 app.get("/", (req, res) => {
   res.send("Salom");
 });
@@ -12,6 +14,21 @@ const books = [
 
 app.get("/api/books", (req, res) => {
   res.send(["abadiyot", "oq soyloq", "oqish"]);
+});
+
+app.post("api/books", (req, res) => {
+  const newBook = {
+    id: books.length + 1,
+    name: req.body.name,
+  };
+
+  books.push(newBook);
+
+  if (!req.body.name) {
+    return res.status(400);
+  } else {
+    res.send(newBook);
+  }
 });
 
 app.get("/api/books/:id", (req, res) => {
