@@ -1,4 +1,5 @@
 let express = require("express");
+const Joi = require('joi');
 const app = express();
 app.use(express.json());
 
@@ -17,18 +18,28 @@ app.get("/api/books", (req, res) => {
 });
 
 app.post("api/books", (req, res) => {
+
+  const bookSchedule = Joi.object(
+    {
+      name: Joi.string().required().min(3)
+    }
+  )
+
+  const {error} = bookSchedule.validate(req.body)
+  
+
+  if(error){
+    return res.status(400).send(error.details[0].message);
+  }
+
+
   const newBook = {
     id: books.length + 1,
     name: req.body.name,
   };
 
   books.push(newBook);
-
-  if (!req.body.name) {
-    return res.status(400);
-  } else {
-    res.send(newBook);
-  }
+  res.send(newBook);
 });
 
 app.get("/api/books/:id", (req, res) => {
