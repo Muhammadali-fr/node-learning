@@ -150,6 +150,41 @@ app.put("/virtual.com/api/catigories/:name", (req, res) => {
   res.send(category);
 });
 
+app.post("/virtual.com/api/catigories", (req, res) => {
+  categorySchedule = Joi.object({
+    name: Joi.string().required().min(3),
+  });
+
+  const { error } = categorySchedule.validate(req.body);
+
+  if (error) {
+    res.status(400).send(error.details[0].message);
+  }
+
+  const newCategory = {
+    id: catigoriesArr.length + 1,
+    name: req.body.name,
+  };
+
+  catigoriesArr.push(newCategory);
+  res.send(newCategory);
+});
+
+app.delete("/virtual.com/api/catigories/:id", (req, res) => {
+  const category = catigoriesArr.find(
+    (categor) => categor.id === parseInt(req.params.id)
+  );
+
+  if (!category) {
+    return res.status(404).send("category not found while updating.");
+  }
+
+  const categoryIndex = catigoriesArr.indexOf(category);
+  catigoriesArr.splice(categoryIndex, 1);
+
+  res.send(category);
+});
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   return console.log(` ${port} shu portni ishlatyapman.`);
