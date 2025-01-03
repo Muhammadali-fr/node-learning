@@ -87,13 +87,23 @@ let express = require("express");
 const Joi = require("joi");
 const logger = require("./logger");
 const auth = require("./auth");
-
+const helmet = require("helmet");
+const morgan = require("morgan");
 const app = express();
+
+if (app.get("env") === "development") {
+  app.use(morgan("tiny"));
+  console.log('logger isglayapti!');
+  
+}
+
 app.use(express.json());
-
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
 app.use(logger);
-
 app.use(auth);
+app.use(helmet());
+console.log(process.env.NODE_ENV);
 
 let catigoriesArr = [
   {
@@ -165,7 +175,7 @@ app.post("/virtual.com/api/catigories", (req, res) => {
   const { error } = categorySchedule.validate(req.body);
 
   if (error) {
-    res.status(400).send(error.details[0].message);
+    return res.status(400).send(error.details[0].message);
   }
 
   const newCategory = {
