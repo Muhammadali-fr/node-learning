@@ -89,13 +89,17 @@ const logger = require("./logger");
 const auth = require("./auth");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const config = require("config");
 const app = express();
 
 if (app.get("env") === "development") {
   app.use(morgan("tiny"));
-  console.log('logger isglayapti!');
-  
+  console.log("logger isglayapti!");
 }
+
+console.log(config.get("name"));
+console.log(config.get("mailserver.hostname"));
+console.log(config.get("mailserver.password"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
