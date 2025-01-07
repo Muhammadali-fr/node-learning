@@ -1,98 +1,83 @@
 let express = require("express");
 const Joi = require("joi");
 const router = express.Router();
+const mongoose = require("mongoose");
 
-let catigoriesArr = [
-  {
-    id: 1,
-    name: "Web devoloper",
+const categorySchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    minlength: 5,
+    maxlength: 50,
   },
-  {
-    id: 2,
-    name: "Web Design",
-  },
-  {
-    id: 3,
-    name: "Front-End",
-  },
-  {
-    id: 4,
-    name: "Back-End",
-  },
-];
-
-router.get("/", (req, res) => {
-  res.send(catigoriesArr);
 });
 
-router.get("/:name", (req, res) => {
-  const category = catigoriesArr.find(
-    (categor) => categor.name.toLowerCase() === req.params.name.toLowerCase()
+const Category = mongoose.model("Category", categorySchema);
+
+router.get("/", async (req, res) => {
+  const categoryies = await Category.find().sort("name");
+  res.send(categoryies);
+});
+
+router.get("/:id", async (req, res) => {
+  let category = await Category.findById(req.params.id);
+  if (!category) {
+    return res.status(404).send("bu aydi bilan kiob topilmadi");
+  }
+
+  res.send(category);
+});
+
+router.put("/:id", async (req, res) => {
+  const { error } = ValidateCategory(req.body);
+  if (error) {
+    return res.send("Update vaqtida xaotolik:", error.details[0].message);
+  }
+
+  let category = await Category.findByIdAndUpdate(
+    req.params.id,
+    { name: req.body.name },
+    { new: true }
   );
 
   if (!category) {
-    return res.status(404).send("category not found.");
+    return res.send("Update vaqtida Id ga mos book topilmadi");
   }
+
+  res.send(category);
+});
+
+router.post("/", async (req, res) => {
+  const { error } = ValidateCategory(req.body);
+
+  if (error) {
+    return res.status(400).send(error.details[0].message);
+  }
+
+  let category = new Category({
+    name: req.body.name,
+  });
+
+  category = await category.save();
 
   res.status(200).send(category);
 });
 
-router.put("/:name", (req, res) => {
-  const category = catigoriesArr.find(
-    (categor) => categor.name.toLowerCase() === req.params.name.toLowerCase()
-  );
-
+router.delete("/:id", async (req, res) => {
+  const category = await Category.findByIdAndRemove(req.params.id);
   if (!category) {
-    return res.status(404).send("category not found while updating.");
+    return res.status(404).send("Delete vaqtida bunga mos id topilmadi");
   }
 
-  let categorySchedule = Joi.object({
-    name: Joi.string().required().min(3),
-  });
-
-  let { error } = categorySchedule.validate(req.body);
-
-  if (error) {
-    return res.status(400).send(error.details[0].message);
-  }
-
-  category.name = req.body.name;
   res.send(category);
 });
 
-router.post("/", (req, res) => {
-  categorySchedule = Joi.object({
-    name: Joi.string().required().min(3),
+function ValidateCategory(category) {
+  const schema = Joi.object({
+    name: Joi.string().min(3).required(),
   });
 
-  const { error } = categorySchedule.validate(req.body);
-
-  if (error) {
-    return res.status(400).send(error.details[0].message);
-  }
-
-  const newCategory = {
-    id: catigoriesArr.length + 1,
-    name: req.body.name,
-  };
-
-  catigoriesArr.push(newCategory);
-  res.send(newCategory);
-});
-
-router.delete("/:id", (req, res) => {
-  const category = catigoriesArr.find(
-    (categor) => categor.id === parseInt(req.params.id)
-  );
-
-  if (!category) {
-    return res.status(404).send("category not found while updating.");
-  }
-
-  const categoryIndex = catigoriesArr.indexOf(category);
-  catigoriesArr.splice(categoryIndex, 1);
-
-  res.send(category);
-});
+  return schema.validate(category);
+}
 
 module.exports = router;
