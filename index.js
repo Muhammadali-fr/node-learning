@@ -1,5 +1,6 @@
 let express = require("express");
 let books = require("./routes/books");
+let customersRoute = require("./routes/customers");
 const mongoose = require("mongoose");
 const path = require("path");
 const app = express();
@@ -14,10 +15,11 @@ mongoose
   });
 
 app.set("view engine", "pug");
-app.set("views", path.join(__dirname, 'views'));
+app.set("views", path.join(__dirname, "views"));
 
 app.use(express.json());
 app.use("/api/books", books);
+app.use("/api/customers", customersRoute);
 
 app.get("/", (req, res) => {
   res.render("index");

@@ -1,18 +1,6 @@
 let express = require("express");
-const Joi = require("joi");
 const router = express.Router();
-const mongoose = require("mongoose");
-
-const categorySchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    minlength: 5,
-    maxlength: 50,
-  },
-});
-
-const Category = mongoose.model("Category", categorySchema);
+const { Category, ValidateCategory } = require("../models/book");
 
 router.get("/", async (req, res) => {
   const categoryies = await Category.find().sort("name");
@@ -71,13 +59,5 @@ router.delete("/:id", async (req, res) => {
 
   res.send(category);
 });
-
-function ValidateCategory(category) {
-  const schema = Joi.object({
-    name: Joi.string().min(3).required(),
-  });
-
-  return schema.validate(category);
-}
 
 module.exports = router;
